@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { ButtonIcon, Icon } from "@applicator/sdk/components";
+import { ButtonIcon, Icon, Tooltip } from "@applicator/sdk/components";
 import { Note } from "../types/Note";
 import { Label } from "../types/Label";
 
@@ -107,25 +107,29 @@ export default function NoteRow({ note, labels, isOpen, onClick, onDelete, onTog
               </span>
             ))}
             {noteLabels.length > 3 && (
-              <span
-                title={noteLabels.slice(3).map((l) => l.name).join(", ")}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  padding: "1px 6px",
-                  borderRadius: 9999,
-                  fontSize: 11,
-                  fontWeight: 500,
-                  backgroundColor: "rgba(100,116,139,0.15)",
-                  color: "#64748b",
-                  border: "1px solid rgba(100,116,139,0.3)",
-                  whiteSpace: "nowrap",
-                  flexShrink: 0,
-                  cursor: "default",
-                }}
+              <Tooltip
+                text={noteLabels.slice(3).map((l) => l.name).join(", ")}
+                placement="bottom"
               >
-                +{noteLabels.length - 3}
-              </span>
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    padding: "1px 6px",
+                    borderRadius: 9999,
+                    fontSize: 11,
+                    fontWeight: 500,
+                    backgroundColor: "rgba(100,116,139,0.15)",
+                    color: "#64748b",
+                    border: "1px solid rgba(100,116,139,0.3)",
+                    whiteSpace: "nowrap",
+                    flexShrink: 0,
+                    cursor: "default",
+                  }}
+                >
+                  +{noteLabels.length - 3}
+                </span>
+              </Tooltip>
             )}
           </div>
         )}

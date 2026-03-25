@@ -177,6 +177,31 @@ export default function Stickies({ context }: Props) {
     [addToast]
   );
 
+  // Duplicate a note
+  const handleDuplicateNote = useCallback(
+    async (source: Note) => {
+      try {
+        const res = await fetch("/api/stickies/notes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: `${source.name} (Copy)`,
+            content: source.content,
+            labelIds: source.labelIds,
+            lists: source.lists,
+          }),
+        });
+        if (!res.ok) throw new Error();
+        const note: Note = await res.json();
+        setNotes((prev) => [note, ...prev]);
+        setOpenNote(note);
+      } catch {
+        addToast({ message: "Failed to duplicate note", type: "error" });
+      }
+    },
+    [addToast]
+  );
+
   // Delete a label
   const handleDeleteLabel = useCallback(
     async (label: Label) => {
@@ -313,6 +338,7 @@ export default function Stickies({ context }: Props) {
           onUpdate={handleUpdateNote}
           onDelete={handleDeleteNote}
           onToggleFavorite={handleToggleFavorite}
+          onDuplicate={handleDuplicateNote}
         />
       )}
 

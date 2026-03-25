@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { ButtonIcon, Icon } from "@applicator/sdk/components";
+import { ButtonIcon, Icon, Tooltip } from "@applicator/sdk/components";
 import { Label } from "../types/Label";
 
 interface Props {
@@ -27,8 +27,89 @@ export default function LeftNav({
   onEditLabel,
   onDeleteLabel,
 }: Props) {
+  const [collapsed, setCollapsed] = useState(false);
   const [hoveredLabelId, setHoveredLabelId] = useState<string | null>(null);
   const [hoveredNav, setHoveredNav] = useState<"all" | "favorites" | null>(null);
+
+  const allNotesActive = !showFavorites && selectedLabelId === null;
+
+  if (collapsed) {
+    return (
+      <div
+        style={{
+          width: 40,
+          flexShrink: 0,
+          backgroundColor: "#080f1c",
+          borderRight: "1px solid #1e293b",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          paddingTop: 8,
+          gap: 4,
+          overflow: "hidden",
+        }}
+      >
+        {/* Expand button */}
+        <Tooltip text="Expand panel" placement="right">
+          <span
+            onClick={() => setCollapsed(false)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 28,
+              height: 28,
+              borderRadius: 5,
+              cursor: "pointer",
+              color: "#475569",
+            }}
+          >
+            <Icon name="chevron-right" size={16} />
+          </span>
+        </Tooltip>
+
+        {/* All Notes icon */}
+        <Tooltip text="All Notes" placement="right">
+          <span
+            onClick={onSelectAll}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 28,
+              height: 28,
+              borderRadius: 5,
+              cursor: "pointer",
+              color: allNotesActive ? "#3b82f6" : "#475569",
+              backgroundColor: allNotesActive ? "rgba(59,130,246,0.15)" : "transparent",
+            }}
+          >
+            <Icon name="sticky-note" size={16} />
+          </span>
+        </Tooltip>
+
+        {/* Favorites icon */}
+        <Tooltip text="Favorites" placement="right">
+          <span
+            onClick={onShowFavorites}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 28,
+              height: 28,
+              borderRadius: 5,
+              cursor: "pointer",
+              color: showFavorites ? "#eab308" : "#475569",
+              backgroundColor: showFavorites ? "rgba(234,179,8,0.12)" : "transparent",
+            }}
+          >
+            <Icon name="star" size={16} />
+          </span>
+        </Tooltip>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -42,7 +123,30 @@ export default function LeftNav({
         overflow: "hidden",
       }}
     >
-      {/* All Notes header */}
+      {/* Top bar with collapse button */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "flex-end",
+          padding: "6px 8px 0",
+        }}
+      >
+        <Tooltip text="Collapse panel" placement="right">
+          <span style={{ display: "flex" }}>
+            <ButtonIcon
+              name="chevron-left"
+              label="Collapse panel"
+              onClick={() => setCollapsed(true)}
+              size="sm"
+              iconSize={13}
+              placement="right"
+            />
+          </span>
+        </Tooltip>
+      </div>
+
+      {/* All Notes */}
       <div
         onClick={onSelectAll}
         onMouseEnter={() => setHoveredNav("all")}
@@ -52,26 +156,24 @@ export default function LeftNav({
           alignItems: "center",
           gap: 8,
           padding: "10px 12px",
-          margin: "8px 8px 0",
+          margin: "4px 8px 0",
           borderRadius: 6,
           cursor: "pointer",
-          color: !showFavorites && selectedLabelId === null ? "#f8fafc" : "#94a3b8",
-          fontWeight: !showFavorites && selectedLabelId === null ? 600 : 500,
+          color: allNotesActive ? "#f8fafc" : "#94a3b8",
+          fontWeight: allNotesActive ? 600 : 500,
           fontSize: 14,
-          backgroundColor:
-            !showFavorites && selectedLabelId === null
-              ? "rgba(59,130,246,0.15)"
-              : hoveredNav === "all"
-              ? "rgba(30,41,59,0.7)"
-              : "transparent",
+          backgroundColor: allNotesActive
+            ? "rgba(59,130,246,0.15)"
+            : hoveredNav === "all"
+            ? "rgba(30,41,59,0.7)"
+            : "transparent",
           userSelect: "none",
           transition: "background-color 0.1s",
         }}
       >
         <span
           style={{
-            color:
-              !showFavorites && selectedLabelId === null ? "#3b82f6" : "#475569",
+            color: allNotesActive ? "#3b82f6" : "#475569",
             flexShrink: 0,
             display: "flex",
             alignItems: "center",

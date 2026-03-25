@@ -14,6 +14,7 @@ interface Props {
   onUpdate: (note: Note) => void;
   onDelete: (id: string) => void;
   onToggleFavorite: (noteId: string) => void;
+  onDuplicate: (note: Note) => void;
 }
 
 function formatDate(iso: string): string {
@@ -27,7 +28,7 @@ function formatDate(iso: string): string {
   });
 }
 
-export default function NoteFlyout({ note, labels, onClose, onUpdate, onDelete, onToggleFavorite }: Props) {
+export default function NoteFlyout({ note, labels, onClose, onUpdate, onDelete, onToggleFavorite, onDuplicate }: Props) {
   const [localNote, setLocalNote] = useState<Note>(note);
   const [editingName, setEditingName] = useState(false);
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -46,6 +47,11 @@ export default function NoteFlyout({ note, labels, onClose, onUpdate, onDelete, 
       updatedAt: note.updatedAt,
     }));
   }, [note.updatedAt]);
+
+  // Sync isFavorite from optimistic updates in parent
+  useEffect(() => {
+    setLocalNote((prev) => ({ ...prev, isFavorite: note.isFavorite }));
+  }, [note.isFavorite]);
 
   const save = useCallback(
     (updated: Note) => {
@@ -237,6 +243,13 @@ export default function NoteFlyout({ note, labels, onClose, onUpdate, onDelete, 
             size="sm"
             subvariant="warning"
             active={localNote.isFavorite}
+            placement="bottom"
+          />
+          <ButtonIcon
+            name="copy"
+            label="Duplicate"
+            onClick={() => onDuplicate(localNote)}
+            size="sm"
             placement="bottom"
           />
           <ButtonIcon
