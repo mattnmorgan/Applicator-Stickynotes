@@ -1,33 +1,130 @@
 {
-  "id": "my-app",
-  "name": "My App",
+  "id": "stickies",
+  "name": "Stickies",
   "version": {
     "major": 1,
     "minor": 0,
     "dev": 0
   },
-  "author": "Your Name",
-  "contactEmail": "you@example.com",
-  "description": "Description of what your app does",
+  "author": "Matthew Morgan",
+  "contactEmail": "matthew@morgantech.info",
+  "description": "Personal sticky notes with labels, rich text, and checklists",
   "dependencies": {},
-  "tables": [],
+  "tables": [
+    {
+      "name": "note",
+      "description": "A sticky note belonging to a user",
+      "fields": [
+        {
+          "name": "name",
+          "description": "Note title",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "content",
+          "description": "Rich text HTML body",
+          "type": "string"
+        },
+        {
+          "name": "labelIds",
+          "description": "JSON array of label IDs applied to this note",
+          "type": "json"
+        },
+        {
+          "name": "lists",
+          "description": "JSON array of checklist objects: [{id, name, items: [{id, text, completed, order}]}]",
+          "type": "json"
+        },
+        {
+          "name": "isFavorite",
+          "description": "Whether the note is marked as a favorite",
+          "type": "boolean"
+        },
+        {
+          "name": "ownerId",
+          "description": "User who owns this note",
+          "type": "relationship",
+          "relatedTo": "system:user",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "label",
+      "description": "A user-created label for categorising notes",
+      "fields": [
+        {
+          "name": "name",
+          "description": "Label name",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "color",
+          "description": "Hex color string for the label",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "ownerId",
+          "description": "User who owns this label",
+          "type": "relationship",
+          "relatedTo": "system:user",
+          "required": true
+        }
+      ]
+    }
+  ],
   "authorizations": [],
   "authorities": [],
   "apiRoutes": [
-    { "path": "items", "method": "GET", "description": "List all items" },
-    { "path": "items", "method": "POST", "description": "Create a new item" },
-    { "path": "items/[item-id]", "method": "GET", "description": "Get an item by ID" },
-    { "path": "items/[item-id]", "method": "PATCH", "description": "Update an item" },
-    { "path": "items/[item-id]", "method": "DELETE", "description": "Delete an item" }
+    {
+      "path": "notes",
+      "method": "GET",
+      "description": "List all notes for the current user"
+    },
+    { "path": "notes", "method": "POST", "description": "Create a new note" },
+    {
+      "path": "notes/[note-id]",
+      "method": "GET",
+      "description": "Get a note by ID"
+    },
+    {
+      "path": "notes/[note-id]",
+      "method": "PATCH",
+      "description": "Update a note"
+    },
+    {
+      "path": "notes/[note-id]",
+      "method": "DELETE",
+      "description": "Delete a note"
+    },
+    {
+      "path": "labels",
+      "method": "GET",
+      "description": "List all labels for the current user"
+    },
+    { "path": "labels", "method": "POST", "description": "Create a new label" },
+    {
+      "path": "labels/[label-id]",
+      "method": "PATCH",
+      "description": "Rename or recolor a label"
+    },
+    {
+      "path": "labels/[label-id]",
+      "method": "DELETE",
+      "description": "Delete a label"
+    }
   ],
   "agents": [],
   "applets": [
     {
       "id": "main",
-      "label": "My App",
-      "description": "Main application view",
+      "label": "Stickies",
+      "description": "Personal sticky notes",
       "target": "app",
-      "component": "App"
+      "component": "Stickies"
     }
   ]
 }

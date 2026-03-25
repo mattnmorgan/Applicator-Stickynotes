@@ -1,0 +1,13 @@
+import { Checklist } from "./Checklist";
+
+export interface Note {
+  id: string;
+  name: string;
+  content: string;
+  labelIds: string[];
+  lists: Checklist[];
+  isFavorite: boolean;
+  ownerId: string;
+  createdAt: string;
+  updatedAt: string;
+}
