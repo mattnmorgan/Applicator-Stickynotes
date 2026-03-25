@@ -30,6 +30,7 @@ export default function LeftNav({
   const [collapsed, setCollapsed] = useState(false);
   const [hoveredLabelId, setHoveredLabelId] = useState<string | null>(null);
   const [hoveredNav, setHoveredNav] = useState<"all" | "favorites" | null>(null);
+  const [hoveredCollapsed, setHoveredCollapsed] = useState<"expand" | "all" | "favorites" | null>(null);
 
   const allNotesActive = !showFavorites && selectedLabelId === null;
 
@@ -53,6 +54,8 @@ export default function LeftNav({
         <Tooltip text="Expand panel" placement="right">
           <span
             onClick={() => setCollapsed(false)}
+            onMouseEnter={() => setHoveredCollapsed("expand")}
+            onMouseLeave={() => setHoveredCollapsed(null)}
             style={{
               display: "flex",
               alignItems: "center",
@@ -61,7 +64,9 @@ export default function LeftNav({
               height: 28,
               borderRadius: 5,
               cursor: "pointer",
-              color: "#475569",
+              color: hoveredCollapsed === "expand" ? "#94a3b8" : "#475569",
+              backgroundColor: hoveredCollapsed === "expand" ? "rgba(30,41,59,0.7)" : "transparent",
+              transition: "background-color 0.1s, color 0.1s",
             }}
           >
             <Icon name="chevron-right" size={16} />
@@ -72,6 +77,8 @@ export default function LeftNav({
         <Tooltip text="All Notes" placement="right">
           <span
             onClick={onSelectAll}
+            onMouseEnter={() => setHoveredCollapsed("all")}
+            onMouseLeave={() => setHoveredCollapsed(null)}
             style={{
               display: "flex",
               alignItems: "center",
@@ -80,8 +87,13 @@ export default function LeftNav({
               height: 28,
               borderRadius: 5,
               cursor: "pointer",
-              color: allNotesActive ? "#3b82f6" : "#475569",
-              backgroundColor: allNotesActive ? "rgba(59,130,246,0.15)" : "transparent",
+              color: allNotesActive ? "#3b82f6" : hoveredCollapsed === "all" ? "#94a3b8" : "#475569",
+              backgroundColor: allNotesActive
+                ? "rgba(59,130,246,0.15)"
+                : hoveredCollapsed === "all"
+                ? "rgba(30,41,59,0.7)"
+                : "transparent",
+              transition: "background-color 0.1s, color 0.1s",
             }}
           >
             <Icon name="sticky-note" size={16} />
@@ -92,6 +104,8 @@ export default function LeftNav({
         <Tooltip text="Favorites" placement="right">
           <span
             onClick={onShowFavorites}
+            onMouseEnter={() => setHoveredCollapsed("favorites")}
+            onMouseLeave={() => setHoveredCollapsed(null)}
             style={{
               display: "flex",
               alignItems: "center",
@@ -100,8 +114,13 @@ export default function LeftNav({
               height: 28,
               borderRadius: 5,
               cursor: "pointer",
-              color: showFavorites ? "#eab308" : "#475569",
-              backgroundColor: showFavorites ? "rgba(234,179,8,0.12)" : "transparent",
+              color: showFavorites ? "#eab308" : hoveredCollapsed === "favorites" ? "#94a3b8" : "#475569",
+              backgroundColor: showFavorites
+                ? "rgba(234,179,8,0.12)"
+                : hoveredCollapsed === "favorites"
+                ? "rgba(30,41,59,0.7)"
+                : "transparent",
+              transition: "background-color 0.1s, color 0.1s",
             }}
           >
             <Icon name="star" size={16} />

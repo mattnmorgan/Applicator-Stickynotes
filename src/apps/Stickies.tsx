@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import type { UiContext } from "@applicator/sdk/context";
-import { ToastStack } from "@applicator/sdk/components";
+import { DrawerLayout, ToastStack } from "@applicator/sdk/components";
 import type { ToastItem } from "@applicator/sdk/components";
 import { Note } from "../types/Note";
 import { Label } from "../types/Label";
@@ -50,7 +50,7 @@ export default function Stickies({ context }: Props) {
       const sortedNotes = (notesData.notes || []).sort(
         (a: Note, b: Note) =>
           new Date(b.updatedAt || b.createdAt).getTime() -
-          new Date(a.updatedAt || a.createdAt).getTime()
+          new Date(a.updatedAt || a.createdAt).getTime(),
       );
       setNotes(sortedNotes);
       setLabels(labelsData.labels || []);
@@ -71,7 +71,12 @@ export default function Stickies({ context }: Props) {
       const res = await fetch("/api/stickies/notes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: "New Note", content: "", labelIds: [], lists: [] }),
+        body: JSON.stringify({
+          name: "New Note",
+          content: "",
+          labelIds: [],
+          lists: [],
+        }),
       });
       if (!res.ok) throw new Error();
       const note: Note = await res.json();
@@ -103,25 +108,33 @@ export default function Stickies({ context }: Props) {
           return updated.sort(
             (a, b) =>
               new Date(b.updatedAt || b.createdAt).getTime() -
-              new Date(a.updatedAt || a.createdAt).getTime()
+              new Date(a.updatedAt || a.createdAt).getTime(),
           );
         });
         // Propagate server-confirmed dates back to the flyout
         setOpenNote((prev) =>
-          prev?.id === saved.id ? { ...prev, updatedAt: saved.updatedAt, createdAt: saved.createdAt } : prev
+          prev?.id === saved.id
+            ? {
+                ...prev,
+                updatedAt: saved.updatedAt,
+                createdAt: saved.createdAt,
+              }
+            : prev,
         );
       } catch {
         addToast({ message: "Failed to save note", type: "error" });
       }
     },
-    [addToast]
+    [addToast],
   );
 
   // Delete a note
   const handleDeleteNote = useCallback(
     async (noteId: string) => {
       try {
-        const res = await fetch(`/api/stickies/notes/${noteId}`, { method: "DELETE" });
+        const res = await fetch(`/api/stickies/notes/${noteId}`, {
+          method: "DELETE",
+        });
         if (!res.ok) throw new Error();
         setNotes((prev) => prev.filter((n) => n.id !== noteId));
         setOpenNote((prev) => (prev?.id === noteId ? null : prev));
@@ -129,7 +142,7 @@ export default function Stickies({ context }: Props) {
         addToast({ message: "Failed to delete note", type: "error" });
       }
     },
-    [addToast]
+    [addToast],
   );
 
   // Create a label
@@ -144,14 +157,14 @@ export default function Stickies({ context }: Props) {
         if (!res.ok) throw new Error();
         const label: Label = await res.json();
         setLabels((prev) =>
-          [...prev, label].sort((a, b) => a.name.localeCompare(b.name))
+          [...prev, label].sort((a, b) => a.name.localeCompare(b.name)),
         );
         setLabelModalOpen(false);
       } catch {
         addToast({ message: "Failed to create label", type: "error" });
       }
     },
-    [addToast]
+    [addToast],
   );
 
   // Update a label
@@ -166,7 +179,9 @@ export default function Stickies({ context }: Props) {
         if (!res.ok) throw new Error();
         const updated: Label = await res.json();
         setLabels((prev) =>
-          prev.map((l) => (l.id === id ? updated : l)).sort((a, b) => a.name.localeCompare(b.name))
+          prev
+            .map((l) => (l.id === id ? updated : l))
+            .sort((a, b) => a.name.localeCompare(b.name)),
         );
         setEditingLabel(null);
         setLabelModalOpen(false);
@@ -174,7 +189,7 @@ export default function Stickies({ context }: Props) {
         addToast({ message: "Failed to update label", type: "error" });
       }
     },
-    [addToast]
+    [addToast],
   );
 
   // Duplicate a note
@@ -199,14 +214,16 @@ export default function Stickies({ context }: Props) {
         addToast({ message: "Failed to duplicate note", type: "error" });
       }
     },
-    [addToast]
+    [addToast],
   );
 
   // Delete a label
   const handleDeleteLabel = useCallback(
     async (label: Label) => {
       try {
-        const res = await fetch(`/api/stickies/labels/${label.id}`, { method: "DELETE" });
+        const res = await fetch(`/api/stickies/labels/${label.id}`, {
+          method: "DELETE",
+        });
         if (!res.ok) throw new Error();
         setLabels((prev) => prev.filter((l) => l.id !== label.id));
         if (selectedLabelId === label.id) setSelectedLabelId(null);
@@ -214,7 +231,7 @@ export default function Stickies({ context }: Props) {
         addToast({ message: "Failed to delete label", type: "error" });
       }
     },
-    [addToast, selectedLabelId]
+    [addToast, selectedLabelId],
   );
 
   // Toggle favorite — optimistic update
@@ -224,10 +241,10 @@ export default function Stickies({ context }: Props) {
       if (!note) return;
       const newValue = !note.isFavorite;
       setNotes((prev) =>
-        prev.map((n) => (n.id === noteId ? { ...n, isFavorite: newValue } : n))
+        prev.map((n) => (n.id === noteId ? { ...n, isFavorite: newValue } : n)),
       );
       setOpenNote((prev) =>
-        prev?.id === noteId ? { ...prev, isFavorite: newValue } : prev
+        prev?.id === noteId ? { ...prev, isFavorite: newValue } : prev,
       );
       try {
         const res = await fetch(`/api/stickies/notes/${noteId}`, {
@@ -239,15 +256,17 @@ export default function Stickies({ context }: Props) {
       } catch {
         // Revert on failure
         setNotes((prev) =>
-          prev.map((n) => (n.id === noteId ? { ...n, isFavorite: !newValue } : n))
+          prev.map((n) =>
+            n.id === noteId ? { ...n, isFavorite: !newValue } : n,
+          ),
         );
         setOpenNote((prev) =>
-          prev?.id === noteId ? { ...prev, isFavorite: !newValue } : prev
+          prev?.id === noteId ? { ...prev, isFavorite: !newValue } : prev,
         );
         addToast({ message: "Failed to update favorite", type: "error" });
       }
     },
-    [notes, addToast]
+    [notes, addToast],
   );
 
   // Open note from list — sync flyout if different note
@@ -270,77 +289,98 @@ export default function Stickies({ context }: Props) {
       result = result.filter((n) => {
         if (n.name.toLowerCase().includes(q)) return true;
         const noteLabels = labels.filter((l) => n.labelIds.includes(l.id));
-        if (noteLabels.some((l) => l.name.toLowerCase().includes(q))) return true;
-        const text = n.content
-          .replace(/<[^>]+>/g, " ")
-          .toLowerCase();
+        if (noteLabels.some((l) => l.name.toLowerCase().includes(q)))
+          return true;
+        const text = n.content.replace(/<[^>]+>/g, " ").toLowerCase();
         if (text.includes(q)) return true;
         return false;
       });
     }
 
-    return result.slice().sort(
-      (a, b) =>
-        new Date(b.updatedAt || b.createdAt).getTime() -
-        new Date(a.updatedAt || a.createdAt).getTime()
-    );
+    return result
+      .slice()
+      .sort(
+        (a, b) =>
+          new Date(b.updatedAt || b.createdAt).getTime() -
+          new Date(a.updatedAt || a.createdAt).getTime(),
+      );
   }, [notes, labels, selectedLabelId, searchQuery, showFavorites]);
 
   return (
-    <div
+    <DrawerLayout
+      rounded={false}
       style={{
-        position: "relative",
         height: "100%",
-        display: "flex",
-        backgroundColor: "#0f172a",
+        background: "#0f172a",
         color: "#f1f5f9",
-        overflow: "hidden",
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        fontFamily:
+          '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
         fontSize: 14,
+        border: "none",
+      }}
+      rightPanel={{
+        open: !!openNote,
+        type: "overlay",
+        animated: true,
+        width: 48,
+        background: "#0f172a",
+        scrollable: false,
+        contentPadding: 0,
+        onClose: () => setOpenNote(null),
+        children: openNote ? (
+          <NoteFlyout
+            note={openNote}
+            labels={labels}
+            onClose={() => setOpenNote(null)}
+            onUpdate={handleUpdateNote}
+            onDelete={handleDeleteNote}
+            onToggleFavorite={handleToggleFavorite}
+            onDuplicate={handleDuplicateNote}
+          />
+        ) : null,
       }}
     >
-      <LeftNav
-        labels={labels}
-        selectedLabelId={selectedLabelId}
-        showFavorites={showFavorites}
-        onSelectLabel={(id) => { setSelectedLabelId(id); setShowFavorites(false); }}
-        onSelectAll={() => { setSelectedLabelId(null); setShowFavorites(false); }}
-        onShowFavorites={() => { setSelectedLabelId(null); setShowFavorites(true); }}
-        onCreateLabel={() => {
-          setEditingLabel(null);
-          setLabelModalOpen(true);
-        }}
-        onEditLabel={(label) => {
-          setEditingLabel(label);
-          setLabelModalOpen(true);
-        }}
-        onDeleteLabel={handleDeleteLabel}
-      />
-
-      <NotesPanel
-        notes={filteredNotes}
-        labels={labels}
-        loading={loading}
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        onCreateNote={handleCreateNote}
-        onOpenNote={handleOpenNote}
-        onDeleteNote={handleDeleteNote}
-        onToggleFavorite={handleToggleFavorite}
-        openNoteId={openNote?.id ?? null}
-      />
-
-      {openNote && (
-        <NoteFlyout
-          note={openNote}
+      <div style={{ display: "flex", height: "100%" }}>
+        <LeftNav
           labels={labels}
-          onClose={() => setOpenNote(null)}
-          onUpdate={handleUpdateNote}
-          onDelete={handleDeleteNote}
-          onToggleFavorite={handleToggleFavorite}
-          onDuplicate={handleDuplicateNote}
+          selectedLabelId={selectedLabelId}
+          showFavorites={showFavorites}
+          onSelectLabel={(id) => {
+            setSelectedLabelId(id);
+            setShowFavorites(false);
+          }}
+          onSelectAll={() => {
+            setSelectedLabelId(null);
+            setShowFavorites(false);
+          }}
+          onShowFavorites={() => {
+            setSelectedLabelId(null);
+            setShowFavorites(true);
+          }}
+          onCreateLabel={() => {
+            setEditingLabel(null);
+            setLabelModalOpen(true);
+          }}
+          onEditLabel={(label) => {
+            setEditingLabel(label);
+            setLabelModalOpen(true);
+          }}
+          onDeleteLabel={handleDeleteLabel}
         />
-      )}
+
+        <NotesPanel
+          notes={filteredNotes}
+          labels={labels}
+          loading={loading}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          onCreateNote={handleCreateNote}
+          onOpenNote={handleOpenNote}
+          onDeleteNote={handleDeleteNote}
+          onToggleFavorite={handleToggleFavorite}
+          openNoteId={openNote?.id ?? null}
+        />
+      </div>
 
       {labelModalOpen && (
         <LabelModal
@@ -355,6 +395,6 @@ export default function Stickies({ context }: Props) {
       )}
 
       <ToastStack toasts={toasts} onClose={removeToast} />
-    </div>
+    </DrawerLayout>
   );
 }
