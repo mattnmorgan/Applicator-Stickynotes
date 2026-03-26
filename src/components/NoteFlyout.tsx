@@ -300,6 +300,7 @@ export default function NoteFlyout({ note, labels, onClose, onUpdate, onDelete, 
               }
               placeholder="Write something..."
               minHeight={120}
+              maxLines={10}
             />
           </div>
         </div>

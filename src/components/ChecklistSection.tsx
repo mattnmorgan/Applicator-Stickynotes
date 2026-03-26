@@ -13,11 +13,12 @@ interface Props {
 
 export default function ChecklistSection({ list, onChange, onDelete }: Props) {
   const [expanded, setExpanded] = useState(true);
-  const [completedExpanded, setCompletedExpanded] = useState(true);
+  const [completedExpanded, setCompletedExpanded] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
   const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
   const dragItemId = useRef<string | null>(null);
+  const dragFromHandle = useRef(false);
   const nameInputRef = useRef<HTMLInputElement>(null);
 
   const todoItems = list.items
@@ -201,7 +202,11 @@ export default function ChecklistSection({ list, onChange, onDelete }: Props) {
             <div
               key={item.id}
               draggable
-              onDragStart={(e) => handleDragStart(e, item.id)}
+              onDragStart={(e) => {
+                if (!dragFromHandle.current) { e.preventDefault(); return; }
+                dragFromHandle.current = false;
+                handleDragStart(e, item.id);
+              }}
               onDragOver={(e) => handleDragOver(e, item.id)}
               onDrop={(e) => handleDrop(e, item.id)}
               onDragEnd={handleDragEnd}
@@ -220,6 +225,7 @@ export default function ChecklistSection({ list, onChange, onDelete }: Props) {
               }}
             >
               <span
+                onMouseDown={() => { dragFromHandle.current = true; }}
                 style={{
                   cursor: "grab",
                   color: "#334155",
@@ -236,12 +242,25 @@ export default function ChecklistSection({ list, onChange, onDelete }: Props) {
                 onChange={() => handleToggle(item.id)}
                 style={{ flexShrink: 0, cursor: "pointer", marginTop: 4 }}
               />
-              <input
-                type="text"
+              <textarea
+                ref={(el) => {
+                  if (el) {
+                    el.style.height = "auto";
+                    el.style.height = `${el.scrollHeight}px`;
+                  }
+                }}
                 value={item.text}
-                onChange={(e) => handleTextChange(item.id, e.target.value)}
+                onChange={(e) => {
+                  handleTextChange(item.id, e.target.value);
+                  e.currentTarget.style.height = "auto";
+                  e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") e.preventDefault();
+                }}
                 onBlur={handleTextBlur}
                 placeholder="Add item..."
+                rows={1}
                 style={{
                   flex: 1,
                   background: "none",
@@ -249,8 +268,12 @@ export default function ChecklistSection({ list, onChange, onDelete }: Props) {
                   outline: "none",
                   color: "#f1f5f9",
                   fontSize: 13,
-                  padding: "2px 0",
+                  padding: 0,
                   minWidth: 0,
+                  resize: "none",
+                  overflow: "hidden",
+                  lineHeight: "1.4",
+                  fontFamily: "inherit",
                   wordBreak: "break-word",
                 }}
               />
