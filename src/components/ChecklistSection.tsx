@@ -18,7 +18,6 @@ export default function ChecklistSection({ list, onChange, onDelete }: Props) {
   const [dragOverId, setDragOverId] = useState<string | null>(null);
   const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
   const dragItemId = useRef<string | null>(null);
-  const dragFromHandle = useRef(false);
   const nameInputRef = useRef<HTMLInputElement>(null);
 
   const todoItems = list.items
@@ -201,12 +200,6 @@ export default function ChecklistSection({ list, onChange, onDelete }: Props) {
           {todoItems.map((item) => (
             <div
               key={item.id}
-              draggable
-              onDragStart={(e) => {
-                if (!dragFromHandle.current) { e.preventDefault(); return; }
-                dragFromHandle.current = false;
-                handleDragStart(e, item.id);
-              }}
               onDragOver={(e) => handleDragOver(e, item.id)}
               onDrop={(e) => handleDrop(e, item.id)}
               onDragEnd={handleDragEnd}
@@ -225,7 +218,8 @@ export default function ChecklistSection({ list, onChange, onDelete }: Props) {
               }}
             >
               <span
-                onMouseDown={() => { dragFromHandle.current = true; }}
+                draggable
+                onDragStart={(e) => handleDragStart(e, item.id)}
                 style={{
                   cursor: "grab",
                   color: "#334155",
