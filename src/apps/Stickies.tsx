@@ -324,8 +324,6 @@ export default function Stickies({ context }: Props) {
         animated: true,
         width: 48,
         background: "#0f172a",
-        scrollable: false,
-        contentPadding: 0,
         onClose: () => setOpenNote(null),
         children: openNote ? (
           <NoteFlyout
