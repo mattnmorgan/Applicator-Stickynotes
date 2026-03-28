@@ -4,7 +4,7 @@
   "version": {
     "major": 1,
     "minor": 0,
-    "dev": 5
+    "dev": 6
   },
   "author": "Matthew Morgan",
   "contactEmail": "matthew@morgantech.info",
@@ -94,7 +94,11 @@
       "method": "GET",
       "description": "List all notes for the current user"
     },
-    { "path": "notes", "method": "POST", "description": "Create a new note" },
+    {
+      "path": "notes",
+      "method": "POST",
+      "description": "Create a new note"
+    },
     {
       "path": "notes/[note-id]",
       "method": "GET",
@@ -115,7 +119,11 @@
       "method": "GET",
       "description": "List all labels for the current user"
     },
-    { "path": "labels", "method": "POST", "description": "Create a new label" },
+    {
+      "path": "labels",
+      "method": "POST",
+      "description": "Create a new label"
+    },
     {
       "path": "labels/[label-id]",
       "method": "PATCH",
