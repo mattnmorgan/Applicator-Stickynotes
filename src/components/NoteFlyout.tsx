@@ -112,6 +112,64 @@ export default function NoteFlyout({ note, labels, onClose, onUpdate, onDuplicat
     [localNote, save]
   );
 
+  const handlePrint = useCallback(() => {
+    const listsHtml = localNote.lists.length > 0
+      ? `<div class="section-label">Lists</div>` +
+        localNote.lists.map((list) => {
+          const items = [...list.items].sort((a, b) => a.order - b.order);
+          return `<div class="list-block">
+            <div class="list-name">${list.name}</div>
+            <ul>${items.map((item) =>
+              `<li class="${item.completed ? "completed" : ""}">
+                <span class="checkbox">${item.completed ? "&#10003;" : ""}</span>
+                <span>${item.text}</span>
+              </li>`
+            ).join("")}</ul>
+          </div>`;
+        }).join("")
+      : "";
+
+    const contentHtml = localNote.content
+      ? `<div class="section-label">Notes</div><div class="content">${localNote.content}</div>`
+      : "";
+
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>${localNote.name}</title>
+  <style>
+    body { font-family: sans-serif; font-size: 14px; color: #111; padding: 32px; max-width: 720px; margin: 0 auto; }
+    h1 { font-size: 20px; margin: 0 0 24px; }
+    .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #64748b; margin: 0 0 8px; }
+    .content { margin-bottom: 24px; line-height: 1.6; }
+    .list-block { margin-bottom: 20px; }
+    .list-name { font-weight: 600; margin-bottom: 6px; }
+    ul { list-style: none; padding: 0; margin: 0; }
+    li { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 4px; }
+    .checkbox { width: 14px; height: 14px; border: 1px solid #94a3b8; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; font-size: 10px; }
+    li.completed span:last-child { text-decoration: line-through; color: #94a3b8; }
+    @media print { body { padding: 0; } }
+  </style>
+</head>
+<body>
+  <h1>${localNote.name}</h1>
+  ${contentHtml}
+  ${listsHtml}
+  <script>window.onload = function() { window.print(); window.onafterprint = function() { window.close(); }; };<\/script>
+</body>
+</html>`;
+
+    const blob = new Blob([html], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const win = window.open(url, "_blank");
+    if (win) {
+      win.addEventListener("load", () => URL.revokeObjectURL(url));
+    } else {
+      URL.revokeObjectURL(url);
+    }
+  }, [localNote]);
+
   const handleLabelChange = useCallback(
     (selected: Label[]) => {
       const updated = { ...localNote, labelIds: selected.map((l) => l.id) };
@@ -210,6 +268,14 @@ export default function NoteFlyout({ note, labels, onClose, onUpdate, onDuplicat
           name="copy"
           label="Duplicate"
           onClick={() => onDuplicate(localNote)}
+          size="sm"
+          placement="bottom"
+        />
+
+        <ButtonIcon
+          name="print"
+          label="Print"
+          onClick={handlePrint}
           size="sm"
           placement="bottom"
         />
