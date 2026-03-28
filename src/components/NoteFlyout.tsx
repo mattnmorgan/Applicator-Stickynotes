@@ -12,8 +12,6 @@ interface Props {
   labels: Label[];
   onClose: () => void;
   onUpdate: (note: Note) => void;
-  onDelete: (id: string) => void;
-  onToggleFavorite: (noteId: string) => void;
   onDuplicate: (note: Note) => void;
 }
 
@@ -28,7 +26,7 @@ function formatDate(iso: string): string {
   });
 }
 
-export default function NoteFlyout({ note, labels, onClose, onUpdate, onDelete, onToggleFavorite, onDuplicate }: Props) {
+export default function NoteFlyout({ note, labels, onClose, onUpdate, onDuplicate }: Props) {
   const [localNote, setLocalNote] = useState<Note>(note);
   const [editingName, setEditingName] = useState(false);
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -52,6 +50,16 @@ export default function NoteFlyout({ note, labels, onClose, onUpdate, onDelete, 
   useEffect(() => {
     setLocalNote((prev) => ({ ...prev, isFavorite: note.isFavorite }));
   }, [note.isFavorite]);
+
+  // Sync isArchived from optimistic updates in parent
+  useEffect(() => {
+    setLocalNote((prev) => ({ ...prev, isArchived: note.isArchived }));
+  }, [note.isArchived]);
+
+  // Sync isPinned from optimistic updates in parent
+  useEffect(() => {
+    setLocalNote((prev) => ({ ...prev, isPinned: note.isPinned }));
+  }, [note.isPinned]);
 
   const save = useCallback(
     (updated: Note) => {
@@ -112,11 +120,6 @@ export default function NoteFlyout({ note, labels, onClose, onUpdate, onDelete, 
     },
     [localNote, save]
   );
-
-  const handleDelete = useCallback(() => {
-    onClose();
-    onDelete(note.id);
-  }, [note.id, onClose, onDelete]);
 
   const selectedLabels = labels.filter((l) => localNote.labelIds.includes(l.id));
 
@@ -202,28 +205,12 @@ export default function NoteFlyout({ note, labels, onClose, onUpdate, onDelete, 
           size="sm"
           placement="bottom"
         />
-        <ButtonIcon
-          name="star"
-          label={localNote.isFavorite ? "Unfavorite" : "Favorite"}
-          onClick={() => onToggleFavorite(note.id)}
-          size="sm"
-          subvariant="warning"
-          active={localNote.isFavorite}
-          placement="bottom"
-        />
+
         <ButtonIcon
           name="copy"
           label="Duplicate"
           onClick={() => onDuplicate(localNote)}
           size="sm"
-          placement="bottom"
-        />
-        <ButtonIcon
-          name="trash"
-          label="Delete note"
-          onClick={handleDelete}
-          size="sm"
-          subvariant="danger"
           placement="bottom"
         />
       </div>

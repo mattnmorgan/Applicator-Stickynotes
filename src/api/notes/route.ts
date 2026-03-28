@@ -36,6 +36,8 @@ export async function POST(req: NextRequest, context: ApiContext) {
       labelIds: body.labelIds || [],
       lists: body.lists || [],
       isFavorite: false,
+      isArchived: false,
+      isPinned: false,
       ownerId: user.id,
     });
     return NextResponse.json(

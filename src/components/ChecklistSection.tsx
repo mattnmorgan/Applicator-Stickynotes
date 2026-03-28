@@ -169,6 +169,26 @@ export default function ChecklistSection({ list, onChange, onDelete }: Props) {
           iconSize={12}
           placement="left"
         />
+        {todoItems.length > 0 && (
+          <ButtonIcon
+            name="check"
+            label="Check all items"
+            onClick={() => updateItems(list.items.map((i) => ({ ...i, completed: true })))}
+            size="sm"
+            iconSize={11}
+            placement="left"
+          />
+        )}
+        {completedItems.length > 0 && (
+          <ButtonIcon
+            name="close"
+            label="Uncheck all items"
+            onClick={() => updateItems(list.items.map((i) => ({ ...i, completed: false })))}
+            size="sm"
+            iconSize={11}
+            placement="left"
+          />
+        )}
         <ButtonIcon
           name="trash"
           label="Delete list"
@@ -238,7 +258,8 @@ export default function ChecklistSection({ list, onChange, onDelete }: Props) {
               />
               <textarea
                 ref={(el) => {
-                  if (el) {
+                  if (el && el.dataset.text !== item.text) {
+                    el.dataset.text = item.text;
                     el.style.height = "auto";
                     el.style.height = `${el.scrollHeight}px`;
                   }

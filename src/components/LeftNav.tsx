@@ -8,9 +8,11 @@ interface Props {
   labels: Label[];
   selectedLabelId: string | null;
   showFavorites: boolean;
+  showArchived: boolean;
   onSelectLabel: (id: string) => void;
   onSelectAll: () => void;
   onShowFavorites: () => void;
+  onShowArchived: () => void;
   onCreateLabel: () => void;
   onEditLabel: (label: Label) => void;
   onDeleteLabel: (label: Label) => void;
@@ -20,19 +22,21 @@ export default function LeftNav({
   labels,
   selectedLabelId,
   showFavorites,
+  showArchived,
   onSelectLabel,
   onSelectAll,
   onShowFavorites,
+  onShowArchived,
   onCreateLabel,
   onEditLabel,
   onDeleteLabel,
 }: Props) {
   const [collapsed, setCollapsed] = useState(false);
   const [hoveredLabelId, setHoveredLabelId] = useState<string | null>(null);
-  const [hoveredNav, setHoveredNav] = useState<"all" | "favorites" | null>(null);
-  const [hoveredCollapsed, setHoveredCollapsed] = useState<"expand" | "all" | "favorites" | null>(null);
+  const [hoveredNav, setHoveredNav] = useState<"all" | "favorites" | "archived" | null>(null);
+  const [hoveredCollapsed, setHoveredCollapsed] = useState<"expand" | "all" | "favorites" | "archived" | null>(null);
 
-  const allNotesActive = !showFavorites && selectedLabelId === null;
+  const allNotesActive = !showFavorites && !showArchived && selectedLabelId === null;
 
   if (collapsed) {
     return (
@@ -124,6 +128,33 @@ export default function LeftNav({
             }}
           >
             <Icon name="star" size={16} />
+          </span>
+        </Tooltip>
+
+        {/* Archived icon */}
+        <Tooltip text="Archived" placement="right">
+          <span
+            onClick={onShowArchived}
+            onMouseEnter={() => setHoveredCollapsed("archived")}
+            onMouseLeave={() => setHoveredCollapsed(null)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 28,
+              height: 28,
+              borderRadius: 5,
+              cursor: "pointer",
+              color: showArchived ? "#94a3b8" : hoveredCollapsed === "archived" ? "#94a3b8" : "#475569",
+              backgroundColor: showArchived
+                ? "rgba(30,41,59,0.9)"
+                : hoveredCollapsed === "archived"
+                ? "rgba(30,41,59,0.7)"
+                : "transparent",
+              transition: "background-color 0.1s, color 0.1s",
+            }}
+          >
+            <Icon name="archive" size={16} />
           </span>
         </Tooltip>
       </div>
@@ -234,6 +265,37 @@ export default function LeftNav({
         Favorites
       </div>
 
+      {/* Archived */}
+      <div
+        onClick={onShowArchived}
+        onMouseEnter={() => setHoveredNav("archived")}
+        onMouseLeave={() => setHoveredNav(null)}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          padding: "10px 12px",
+          margin: "4px 8px 0",
+          borderRadius: 6,
+          cursor: "pointer",
+          color: showArchived ? "#f8fafc" : "#94a3b8",
+          fontWeight: showArchived ? 600 : 500,
+          fontSize: 14,
+          backgroundColor: showArchived
+            ? "rgba(30,41,59,0.9)"
+            : hoveredNav === "archived"
+            ? "rgba(30,41,59,0.7)"
+            : "transparent",
+          userSelect: "none",
+          transition: "background-color 0.1s",
+        }}
+      >
+        <span style={{ color: showArchived ? "#94a3b8" : "#475569", flexShrink: 0, display: "flex", alignItems: "center" }}>
+          <Icon name="archive" size={16} />
+        </span>
+        Archived
+      </div>
+
       {/* LABELS section header */}
       <div
         style={{
@@ -280,7 +342,7 @@ export default function LeftNav({
         )}
 
         {labels.map((label) => {
-          const isSelected = !showFavorites && selectedLabelId === label.id;
+          const isSelected = !showFavorites && !showArchived && selectedLabelId === label.id;
           const isHovered = hoveredLabelId === label.id;
           return (
             <div

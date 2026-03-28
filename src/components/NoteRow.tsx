@@ -12,6 +12,8 @@ interface Props {
   onClick: () => void;
   onDelete: () => void;
   onToggleFavorite: () => void;
+  onToggleArchive: () => void;
+  onTogglePin: () => void;
 }
 
 function stripHtml(html: string): string {
@@ -43,7 +45,7 @@ function getChecklistProgress(note: Note): { completed: number; total: number } 
   return { completed, total };
 }
 
-export default function NoteRow({ note, labels, isOpen, onClick, onDelete, onToggleFavorite }: Props) {
+export default function NoteRow({ note, labels, isOpen, onClick, onDelete, onToggleFavorite, onToggleArchive, onTogglePin }: Props) {
   const [hovered, setHovered] = useState(false);
 
   const noteLabels = labels.filter((l) => note.labelIds.includes(l.id));
@@ -151,6 +153,24 @@ export default function NoteRow({ note, labels, isOpen, onClick, onDelete, onTog
             {progress.completed}/{progress.total}
           </span>
         )}
+        {/* Archive — visible on hover/open or when archived */}
+        <span
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            flexShrink: 0,
+            visibility: hovered || isOpen || note.isArchived ? "visible" : "hidden",
+            opacity: hovered || isOpen || note.isArchived ? 1 : 0,
+          }}
+        >
+          <ButtonIcon
+            name="archive"
+            label={note.isArchived ? "Unarchive" : "Archive"}
+            onClick={onToggleArchive}
+            size="sm"
+            active={note.isArchived}
+            placement="left"
+          />
+        </span>
         {/* Trash — always mounted, visible on hover/open */}
         <span
           onClick={(e) => e.stopPropagation()}
@@ -185,6 +205,25 @@ export default function NoteRow({ note, labels, isOpen, onClick, onDelete, onTog
             size="sm"
             subvariant="warning"
             active={note.isFavorite}
+            placement="left"
+          />
+        </span>
+        {/* Pin — visible on hover/open or when pinned */}
+        <span
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            flexShrink: 0,
+            visibility: hovered || isOpen || note.isPinned ? "visible" : "hidden",
+            opacity: hovered || isOpen || note.isPinned ? 1 : 0,
+          }}
+        >
+          <ButtonIcon
+            name="pin"
+            label={note.isPinned ? "Unpin" : "Pin"}
+            onClick={onTogglePin}
+            size="sm"
+            subvariant="info"
+            active={note.isPinned}
             placement="left"
           />
         </span>

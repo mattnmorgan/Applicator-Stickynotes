@@ -16,7 +16,26 @@ interface Props {
   onOpenNote: (note: Note) => void;
   onDeleteNote: (id: string) => void;
   onToggleFavorite: (noteId: string) => void;
+  onToggleArchive: (noteId: string) => void;
+  onTogglePin: (noteId: string) => void;
   openNoteId: string | null;
+}
+
+function SectionLabel({ text }: { text: string }) {
+  return (
+    <div
+      style={{
+        padding: "8px 16px 4px",
+        fontSize: 10,
+        fontWeight: 700,
+        color: "#475569",
+        letterSpacing: "0.08em",
+        textTransform: "uppercase",
+      }}
+    >
+      {text}
+    </div>
+  );
 }
 
 export default function NotesPanel({
@@ -29,8 +48,14 @@ export default function NotesPanel({
   onOpenNote,
   onDeleteNote,
   onToggleFavorite,
+  onToggleArchive,
+  onTogglePin,
   openNoteId,
 }: Props) {
+  const pinnedNotes = notes.filter((n) => n.isPinned);
+  const unpinnedNotes = notes.filter((n) => !n.isPinned);
+  const hasSections = pinnedNotes.length > 0;
+
   return (
     <div
       style={{
@@ -134,22 +159,47 @@ export default function NotesPanel({
           </div>
         )}
 
-        {!loading &&
-          notes.map((note) => (
-            <NoteRow
-              key={note.id}
-              note={note}
-              labels={labels}
-              isOpen={note.id === openNoteId}
-              onClick={() => onOpenNote(note)}
-              onDelete={() => {
-                onDeleteNote(note.id);
-              }}
-              onToggleFavorite={() => {
-                onToggleFavorite(note.id);
-              }}
-            />
-          ))}
+        {!loading && notes.length > 0 && (
+          <>
+            {pinnedNotes.length > 0 && (
+              <>
+                <SectionLabel text="Pinned" />
+                {pinnedNotes.map((note) => (
+                  <NoteRow
+                    key={note.id}
+                    note={note}
+                    labels={labels}
+                    isOpen={note.id === openNoteId}
+                    onClick={() => onOpenNote(note)}
+                    onDelete={() => onDeleteNote(note.id)}
+                    onToggleFavorite={() => onToggleFavorite(note.id)}
+                    onToggleArchive={() => onToggleArchive(note.id)}
+                    onTogglePin={() => onTogglePin(note.id)}
+                  />
+                ))}
+              </>
+            )}
+
+            {unpinnedNotes.length > 0 && (
+              <>
+                {hasSections && <SectionLabel text="Notes" />}
+                {unpinnedNotes.map((note) => (
+                  <NoteRow
+                    key={note.id}
+                    note={note}
+                    labels={labels}
+                    isOpen={note.id === openNoteId}
+                    onClick={() => onOpenNote(note)}
+                    onDelete={() => onDeleteNote(note.id)}
+                    onToggleFavorite={() => onToggleFavorite(note.id)}
+                    onToggleArchive={() => onToggleArchive(note.id)}
+                    onTogglePin={() => onTogglePin(note.id)}
+                  />
+                ))}
+              </>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

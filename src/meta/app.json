@@ -4,7 +4,7 @@
   "version": {
     "major": 1,
     "minor": 0,
-    "dev": 3
+    "dev": 4
   },
   "author": "Matthew Morgan",
   "contactEmail": "matthew@morgantech.info",
@@ -39,6 +39,16 @@
         {
           "name": "isFavorite",
           "description": "Whether the note is marked as a favorite",
+          "type": "boolean"
+        },
+        {
+          "name": "isArchived",
+          "description": "Whether the note has been archived",
+          "type": "boolean"
+        },
+        {
+          "name": "isPinned",
+          "description": "Whether the note is pinned to the top of note lists",
           "type": "boolean"
         },
         {

@@ -46,6 +46,8 @@ export async function PATCH(
     if (body.labelIds !== undefined) updates.labelIds = body.labelIds;
     if (body.lists !== undefined) updates.lists = body.lists;
     if (body.isFavorite !== undefined) updates.isFavorite = body.isFavorite;
+    if (body.isArchived !== undefined) updates.isArchived = body.isArchived;
+    if (body.isPinned !== undefined) updates.isPinned = body.isPinned;
 
     const table = await notes.getTable();
     const updated = await notes.updateRecord(table, params.noteId, updates);

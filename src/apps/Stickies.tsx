@@ -20,6 +20,7 @@ export default function Stickies({ context }: Props) {
   const [labels, setLabels] = useState<Label[]>([]);
   const [selectedLabelId, setSelectedLabelId] = useState<string | null>(null);
   const [showFavorites, setShowFavorites] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [openNote, setOpenNote] = useState<Note | null>(null);
   const [loading, setLoading] = useState(true);
@@ -234,6 +235,70 @@ export default function Stickies({ context }: Props) {
     [addToast, selectedLabelId],
   );
 
+  // Toggle archive — optimistic update
+  const handleToggleArchive = useCallback(
+    async (noteId: string) => {
+      const note = notes.find((n) => n.id === noteId);
+      if (!note) return;
+      const newValue = !note.isArchived;
+      setNotes((prev) =>
+        prev.map((n) => (n.id === noteId ? { ...n, isArchived: newValue } : n)),
+      );
+      setOpenNote((prev) =>
+        prev?.id === noteId ? { ...prev, isArchived: newValue } : prev,
+      );
+      try {
+        const res = await fetch(`/api/stickies/notes/${noteId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ isArchived: newValue }),
+        });
+        if (!res.ok) throw new Error();
+      } catch {
+        setNotes((prev) =>
+          prev.map((n) => (n.id === noteId ? { ...n, isArchived: !newValue } : n)),
+        );
+        setOpenNote((prev) =>
+          prev?.id === noteId ? { ...prev, isArchived: !newValue } : prev,
+        );
+        addToast({ message: "Failed to update archive", type: "error" });
+      }
+    },
+    [notes, addToast],
+  );
+
+  // Toggle pin — optimistic update
+  const handleTogglePin = useCallback(
+    async (noteId: string) => {
+      const note = notes.find((n) => n.id === noteId);
+      if (!note) return;
+      const newValue = !note.isPinned;
+      setNotes((prev) =>
+        prev.map((n) => (n.id === noteId ? { ...n, isPinned: newValue } : n)),
+      );
+      setOpenNote((prev) =>
+        prev?.id === noteId ? { ...prev, isPinned: newValue } : prev,
+      );
+      try {
+        const res = await fetch(`/api/stickies/notes/${noteId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ isPinned: newValue }),
+        });
+        if (!res.ok) throw new Error();
+      } catch {
+        setNotes((prev) =>
+          prev.map((n) => (n.id === noteId ? { ...n, isPinned: !newValue } : n)),
+        );
+        setOpenNote((prev) =>
+          prev?.id === noteId ? { ...prev, isPinned: !newValue } : prev,
+        );
+        addToast({ message: "Failed to update pin", type: "error" });
+      }
+    },
+    [notes, addToast],
+  );
+
   // Toggle favorite — optimistic update
   const handleToggleFavorite = useCallback(
     async (noteId: string) => {
@@ -278,10 +343,14 @@ export default function Stickies({ context }: Props) {
   const filteredNotes = useMemo(() => {
     let result = notes;
 
-    if (showFavorites) {
-      result = result.filter((n) => n.isFavorite);
+    if (showArchived) {
+      result = result.filter((n) => n.isArchived);
+    } else if (showFavorites) {
+      result = result.filter((n) => n.isFavorite && !n.isArchived);
     } else if (selectedLabelId) {
-      result = result.filter((n) => n.labelIds.includes(selectedLabelId));
+      result = result.filter((n) => n.labelIds.includes(selectedLabelId) && !n.isArchived);
+    } else {
+      result = result.filter((n) => !n.isArchived);
     }
 
     if (searchQuery.trim()) {
@@ -304,7 +373,7 @@ export default function Stickies({ context }: Props) {
           new Date(b.updatedAt || b.createdAt).getTime() -
           new Date(a.updatedAt || a.createdAt).getTime(),
       );
-  }, [notes, labels, selectedLabelId, searchQuery, showFavorites]);
+  }, [notes, labels, selectedLabelId, searchQuery, showFavorites, showArchived]);
 
   return (
     <DrawerLayout
@@ -331,8 +400,6 @@ export default function Stickies({ context }: Props) {
             labels={labels}
             onClose={() => setOpenNote(null)}
             onUpdate={handleUpdateNote}
-            onDelete={handleDeleteNote}
-            onToggleFavorite={handleToggleFavorite}
             onDuplicate={handleDuplicateNote}
           />
         ) : null,
@@ -343,17 +410,26 @@ export default function Stickies({ context }: Props) {
           labels={labels}
           selectedLabelId={selectedLabelId}
           showFavorites={showFavorites}
+          showArchived={showArchived}
           onSelectLabel={(id) => {
             setSelectedLabelId(id);
             setShowFavorites(false);
+            setShowArchived(false);
           }}
           onSelectAll={() => {
             setSelectedLabelId(null);
             setShowFavorites(false);
+            setShowArchived(false);
           }}
           onShowFavorites={() => {
             setSelectedLabelId(null);
             setShowFavorites(true);
+            setShowArchived(false);
+          }}
+          onShowArchived={() => {
+            setSelectedLabelId(null);
+            setShowFavorites(false);
+            setShowArchived(true);
           }}
           onCreateLabel={() => {
             setEditingLabel(null);
@@ -376,6 +452,8 @@ export default function Stickies({ context }: Props) {
           onOpenNote={handleOpenNote}
           onDeleteNote={handleDeleteNote}
           onToggleFavorite={handleToggleFavorite}
+          onToggleArchive={handleToggleArchive}
+          onTogglePin={handleTogglePin}
           openNoteId={openNote?.id ?? null}
         />
       </div>

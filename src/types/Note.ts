@@ -7,6 +7,8 @@ export interface Note {
   labelIds: string[];
   lists: Checklist[];
   isFavorite: boolean;
+  isArchived: boolean;
+  isPinned: boolean;
   ownerId: string;
   createdAt: string;
   updatedAt: string;
