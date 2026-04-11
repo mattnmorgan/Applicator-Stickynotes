@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { ButtonIcon, Icon } from "@applicator/sdk/components";
+import { KeyedDebouncer } from "@applicator/sdk/utilities";
 import { Checklist } from "../types/Checklist";
 import { ChecklistItem } from "../types/ChecklistItem";
 
@@ -17,8 +18,19 @@ export default function ChecklistSection({ list, onChange, onDelete }: Props) {
   const [editingName, setEditingName] = useState(false);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
   const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
+  const [textBuffer, setTextBuffer] = useState<Record<string, string>>({});
   const dragItemId = useRef<string | null>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
+  const debouncer = useRef(new KeyedDebouncer());
+  // Always holds the latest list prop so debounce callbacks avoid stale closures
+  const listRef = useRef(list);
+  listRef.current = list;
+
+  // Cancel all pending debounces on unmount
+  useEffect(() => {
+    const d = debouncer.current;
+    return () => d.cancelAll();
+  }, []);
 
   const todoItems = list.items
     .filter((i) => !i.completed)
@@ -48,12 +60,25 @@ export default function ChecklistSection({ list, onChange, onDelete }: Props) {
   };
 
   const handleTextChange = (itemId: string, text: string) => {
-    const updated = list.items.map((i) => (i.id === itemId ? { ...i, text } : i));
-    onChange({ ...list, items: updated });
+    // Update local buffer immediately so the textarea stays responsive
+    setTextBuffer((prev) => ({ ...prev, [itemId]: text }));
+    // Schedule a debounced save; the callback reads listRef to avoid stale closures
+    debouncer.current.schedule(itemId, () => {
+      const current = listRef.current;
+      const updated = current.items.map((i) => (i.id === itemId ? { ...i, text } : i));
+      onChange({ ...current, items: updated });
+    }, 1500);
   };
 
-  const handleTextBlur = () => {
-    onChange(list);
+  const handleTextBlur = (itemId: string) => {
+    const bufferedText = textBuffer[itemId];
+    if (bufferedText === undefined) return;
+    // Flush immediately — cancel pending debounce and save now
+    debouncer.current.cancel(itemId);
+    const current = listRef.current;
+    const updated = current.items.map((i) => (i.id === itemId ? { ...i, text: bufferedText } : i));
+    setTextBuffer((prev) => { const next = { ...prev }; delete next[itemId]; return next; });
+    onChange({ ...current, items: updated });
   };
 
   const handleDeleteItem = (itemId: string) => {
@@ -264,7 +289,7 @@ export default function ChecklistSection({ list, onChange, onDelete }: Props) {
                     el.style.height = `${el.scrollHeight}px`;
                   }
                 }}
-                value={item.text}
+                value={textBuffer[item.id] ?? item.text}
                 onChange={(e) => {
                   handleTextChange(item.id, e.target.value);
                   e.currentTarget.style.height = "auto";
@@ -273,7 +298,7 @@ export default function ChecklistSection({ list, onChange, onDelete }: Props) {
                 onKeyDown={(e) => {
                   if (e.key === "Enter") e.preventDefault();
                 }}
-                onBlur={handleTextBlur}
+                onBlur={() => handleTextBlur(item.id)}
                 placeholder="Add item..."
                 rows={1}
                 style={{
