@@ -3,8 +3,8 @@
   "name": "Stickies",
   "version": {
     "major": 1,
-    "minor": 0,
-    "dev": 11
+    "minor": 1,
+    "dev": 0
   },
   "author": "Matthew Morgan",
   "contactEmail": "matthew@morgantech.info",
@@ -143,6 +143,14 @@
       "description": "Personal sticky notes",
       "target": "app",
       "component": "Stickies"
+    },
+    {
+      "id": "stickynotes",
+      "label": "Stickynotes",
+      "description": "Quick access to your sticky notes from the utility bar",
+      "target": "utility-bar",
+      "component": "Stickynotes",
+      "poppable": true
     }
   ]
 }
